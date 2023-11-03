@@ -4,7 +4,7 @@ go 1.20
 
 replace github.com/VictoriaMetrics/fastcache => ./fastcache
 
-replace github.com/ethereum/go-ethereum => ./go-ethereum
+replace github.com/ethereum/go-ethereum => ./vanna-arb-geth
 
 require (
 	github.com/alicebob/miniredis/v2 v2.21.0
