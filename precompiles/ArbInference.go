@@ -10,7 +10,7 @@ type ArbInference struct {
 	params string
 }
 
-func (con ArbStatistics) InferCall(c ctx, evm mech) (string, error) {
+func (con ArbInference) InferCall(c ctx, evm mech) (string, error) {
 	rc := inference.NewRequestClient(5125)
 	tx := inference.InferenceTx{
 		Hash:   "0x123456789",

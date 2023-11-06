@@ -540,6 +540,7 @@ func Precompiles() map[addr]ArbosPrecompile {
 	ArbGasInfo.methodsByName["GetL1RewardRecipient"].arbosVersion = 11
 	insert(MakePrecompile(templates.ArbAggregatorMetaData, &ArbAggregator{Address: hex("6d")}))
 	insert(MakePrecompile(templates.ArbStatisticsMetaData, &ArbStatistics{Address: hex("6f")}))
+	insert(MakePrecompile(templates.ArbInferCallMetaData, &ArbInferCall{Address: hex("11a")}))
 
 	eventCtx := func(gasLimit uint64, err error) *Context {
 		if err != nil {
