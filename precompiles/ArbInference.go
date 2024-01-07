@@ -1,6 +1,8 @@
 package precompiles
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"strconv"
 	"strings"
 
@@ -14,20 +16,20 @@ type ArbInference struct {
 }
 
 const (
-	InputSeperator = "<?>"
+	InputSeparator = "<?>"
 	TXSeparator    = "#"
 )
 
 func (con *ArbInference) InferCall(c ctx, evm mech, input []byte) ([]byte, error) {
 	inputStr := string(input)
-	inputArray := strings.Split(inputStr, InputSeperator)
+	inputArray := strings.Split(inputStr, InputSeparator)
 	modelName := inputArray[0]
 	inputData := inputArray[1]
 
 	rc := inference.NewRequestClient(5125)
 	caller := c.txProcessor.Callers[0]
 	tx := inference.InferenceTx{
-		Hash:   caller.String() + TXSeparator + strconv.FormatUint(evm.StateDB.GetNonce(caller), 10),
+		Hash:   HashInferenceTX([]string{caller.String(), strconv.FormatUint(evm.StateDB.GetNonce(caller), 10), modelName, inputData}, TXSeparator),
 		Model:  modelName,
 		Params: inputData,
 		TxType: Inference,
@@ -44,14 +46,14 @@ func (con *ArbInference) InferCall(c ctx, evm mech, input []byte) ([]byte, error
 
 func (con *ArbInference) InferCallZK(c ctx, evm mech, input []byte) ([]byte, error) {
 	inputStr := string(input)
-	inputArray := strings.Split(inputStr, InputSeperator)
+	inputArray := strings.Split(inputStr, InputSeparator)
 	modelName := inputArray[0]
 	inputData := inputArray[1]
 
 	rc := inference.NewRequestClient(5125)
 	caller := c.txProcessor.Callers[0]
 	tx := inference.InferenceTx{
-		Hash:   caller.String() + TXSeparator + strconv.FormatUint(evm.StateDB.GetNonce(caller), 10),
+		Hash:   HashInferenceTX([]string{caller.String(), strconv.FormatUint(evm.StateDB.GetNonce(caller), 10), modelName, inputData}, TXSeparator),
 		Model:  modelName,
 		Params: inputData,
 		TxType: ZKInference,
@@ -68,7 +70,7 @@ func (con *ArbInference) InferCallZK(c ctx, evm mech, input []byte) ([]byte, err
 
 func (con *ArbInference) InferCallPipeline(c ctx, evm mech, input []byte) ([]byte, error) {
 	inputStr := string(input)
-	inputArray := strings.Split(inputStr, InputSeperator)
+	inputArray := strings.Split(inputStr, InputSeparator)
 	modelName := inputArray[0]
 	pipelineName := inputArray[1]
 	seed := inputArray[2]
@@ -77,7 +79,7 @@ func (con *ArbInference) InferCallPipeline(c ctx, evm mech, input []byte) ([]byt
 	rc := inference.NewRequestClient(5125)
 	caller := c.txProcessor.Callers[0]
 	tx := inference.InferenceTx{
-		Hash:     caller.String() + TXSeparator + strconv.FormatUint(evm.StateDB.GetNonce(caller), 10),
+		Hash:     HashInferenceTX([]string{caller.String(), strconv.FormatUint(evm.StateDB.GetNonce(caller), 10), modelName, inputData}, TXSeparator),
 		Seed:     seed,
 		Pipeline: pipelineName,
 		Model:    modelName,
@@ -96,7 +98,7 @@ func (con *ArbInference) InferCallPipeline(c ctx, evm mech, input []byte) ([]byt
 
 func (con *ArbInference) InferCallPrivate(c ctx, evm mech, input []byte) ([]byte, error) {
 	inputStr := string(input)
-	inputArray := strings.Split(inputStr, InputSeperator)
+	inputArray := strings.Split(inputStr, InputSeparator)
 	IPAddress := inputArray[0]
 	modelName := inputArray[1]
 	inputData := inputArray[2]
@@ -104,7 +106,7 @@ func (con *ArbInference) InferCallPrivate(c ctx, evm mech, input []byte) ([]byte
 	rc := inference.NewRequestClient(5125)
 	caller := c.txProcessor.Callers[0]
 	tx := inference.InferenceTx{
-		Hash:   caller.String() + TXSeparator + strconv.FormatUint(evm.StateDB.GetNonce(caller), 10),
+		Hash:   HashInferenceTX([]string{caller.String(), strconv.FormatUint(evm.StateDB.GetNonce(caller), 10), modelName, inputData}, TXSeparator),
 		Model:  modelName,
 		Params: inputData,
 		TxType: PrivateInference,
@@ -118,4 +120,14 @@ func (con *ArbInference) InferCallPrivate(c ctx, evm mech, input []byte) ([]byte
 	byteValue := make([]byte, len(result))
 	copy(byteValue, result)
 	return byteValue, nil
+}
+
+func HashInferenceTX(arr []string, separator string) string {
+	hashString := ""
+	for i := 0; i < len(arr); i++ {
+		hashString += arr[i] + separator
+	}
+	hasher := md5.New()
+	hasher.Write([]byte(hashString))
+	return hex.EncodeToString(hasher.Sum(nil))
 }
