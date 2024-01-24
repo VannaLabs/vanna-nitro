@@ -541,6 +541,7 @@ func Precompiles() map[addr]ArbosPrecompile {
 	insert(MakePrecompile(templates.ArbAggregatorMetaData, &ArbAggregator{Address: hex("6d")}))
 	insert(MakePrecompile(templates.ArbStatisticsMetaData, &ArbStatistics{Address: hex("6f")}))
 	insert(MakePrecompile(templates.ArbInferenceMetaData, &ArbInference{Address: hex("11a")}))
+	insert(MakePrecompile(templates.ArbMathStatsMetaData, &ArbMathStats{Address: hex("11b")}))
 
 	eventCtx := func(gasLimit uint64, err error) *Context {
 		if err != nil {
