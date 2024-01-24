@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"strconv"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/rpc/inference"
 	. "github.com/ethereum/go-ethereum/rpc/inference"
@@ -16,15 +15,12 @@ type ArbInference struct {
 }
 
 const (
-	InputSeparator = "<?>"
-	TXSeparator    = "#"
+	TXSeparator = "#"
 )
 
-func (con *ArbInference) InferCall(c ctx, evm mech, input []byte) ([]byte, error) {
-	inputStr := string(input)
-	inputArray := strings.Split(inputStr, InputSeparator)
-	modelName := inputArray[0]
-	inputData := inputArray[1]
+func (con *ArbInference) InferCall(c ctx, evm mech, model []byte, input []byte) ([]byte, error) {
+	modelName := string(model)
+	inputData := string(input)
 
 	rc := inference.NewRequestClient(5125)
 	caller := c.txProcessor.Callers[0]
@@ -44,11 +40,9 @@ func (con *ArbInference) InferCall(c ctx, evm mech, input []byte) ([]byte, error
 	return byteValue, nil
 }
 
-func (con *ArbInference) InferCallZK(c ctx, evm mech, input []byte) ([]byte, error) {
-	inputStr := string(input)
-	inputArray := strings.Split(inputStr, InputSeparator)
-	modelName := inputArray[0]
-	inputData := inputArray[1]
+func (con *ArbInference) InferCallZK(c ctx, evm mech, model []byte, input []byte) ([]byte, error) {
+	modelName := string(model)
+	inputData := string(input)
 
 	rc := inference.NewRequestClient(5125)
 	caller := c.txProcessor.Callers[0]
@@ -68,19 +62,17 @@ func (con *ArbInference) InferCallZK(c ctx, evm mech, input []byte) ([]byte, err
 	return byteValue, nil
 }
 
-func (con *ArbInference) InferCallPipeline(c ctx, evm mech, input []byte) ([]byte, error) {
-	inputStr := string(input)
-	inputArray := strings.Split(inputStr, InputSeparator)
-	modelName := inputArray[0]
-	pipelineName := inputArray[1]
-	seed := inputArray[2]
-	inputData := inputArray[3]
+func (con *ArbInference) InferCallPipeline(c ctx, evm mech, model []byte, pipeline []byte, seed []byte, input []byte) ([]byte, error) {
+	modelName := string(model)
+	pipelineName := string(pipeline)
+	inferenceSeed := string(seed)
+	inputData := string(input)
 
 	rc := inference.NewRequestClient(5125)
 	caller := c.txProcessor.Callers[0]
 	tx := inference.InferenceTx{
 		Hash:     HashInferenceTX([]string{caller.String(), strconv.FormatUint(evm.StateDB.GetNonce(caller), 10), modelName, inputData}, TXSeparator),
-		Seed:     seed,
+		Seed:     inferenceSeed,
 		Pipeline: pipelineName,
 		Model:    modelName,
 		Params:   inputData,
@@ -96,12 +88,10 @@ func (con *ArbInference) InferCallPipeline(c ctx, evm mech, input []byte) ([]byt
 	return byteValue, nil
 }
 
-func (con *ArbInference) InferCallPrivate(c ctx, evm mech, input []byte) ([]byte, error) {
-	inputStr := string(input)
-	inputArray := strings.Split(inputStr, InputSeparator)
-	IPAddress := inputArray[0]
-	modelName := inputArray[1]
-	inputData := inputArray[2]
+func (con *ArbInference) InferCallPrivate(c ctx, evm mech, ip []byte, model []byte, input []byte) ([]byte, error) {
+	IPAddress := string(ip)
+	modelName := string(model)
+	inputData := string(input)
 
 	rc := inference.NewRequestClient(5125)
 	caller := c.txProcessor.Callers[0]
